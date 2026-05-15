@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, LogOut, Save } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { calculateTargets, type Activity, type Goal, type Sex } from "@/lib/calculateTargets";
 import { useCurrentProfile, type CurrentProfile } from "@/hooks/useCurrentProfile";
 import { useOnboardingStore } from "@/store/onboarding";
 import { useSaveOnboardingStep } from "@/hooks/useSaveOnboardingStep";
+import { useAuth } from "@/hooks/useAuth";
 
 type EditableProfile = {
   name: string;
@@ -45,7 +46,22 @@ export default function Profile() {
   const current = useCurrentProfile();
   const setField = useOnboardingStore((s) => s.setField);
   const { save, isPending } = useSaveOnboardingStep();
+  const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<EditableProfile>(() => fromCurrent(current));
+  const [signingOut, setSigningOut] = useState(false);
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    try {
+      await signOut();
+      toast.success("Signed out");
+      navigate("/welcome", { replace: true });
+    } catch (err) {
+      console.error("Sign out failed:", err);
+      toast.error("Couldn't sign out — try again.");
+      setSigningOut(false);
+    }
+  };
 
   const targets = calculateTargets({
     age: profile.age,
@@ -234,6 +250,24 @@ export default function Profile() {
           <Save className="w-4 h-4" />
           {isPending ? "Saving…" : "Save Profile"}
         </button>
+
+        {/* Sign out (only shown when authenticated) */}
+        {user && (
+          <button
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="w-full py-3 rounded-xl bg-secondary text-secondary-foreground font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-60 hover:bg-secondary/80 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            {signingOut ? "Signing out…" : "Sign out"}
+          </button>
+        )}
+
+        {user && (
+          <p className="text-xs text-muted-foreground text-center pt-1">
+            Signed in as {user.email}
+          </p>
+        )}
       </motion.div>
     </div>
   );
