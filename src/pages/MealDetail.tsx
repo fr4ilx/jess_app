@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft, Pencil, Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { MacroBar } from "@/components/MacroBar";
-import { sampleMeals, sampleTargets } from "@/lib/nutrition";
+import { sampleTargets } from "@/lib/nutrition";
 import { useCurrentProfile } from "@/hooks/useCurrentProfile";
+import { useMeal } from "@/hooks/useMealsToday";
 
 const typeLabels: Record<string, string> = {
   breakfast: "Breakfast",
@@ -15,7 +16,7 @@ const typeLabels: Record<string, string> = {
 export default function MealDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const meal = sampleMeals.find((m) => m.id === id);
+  const { data: meal, isLoading } = useMeal(id);
   const profile = useCurrentProfile();
   const t = profile.dailyTargets;
   const targets = {
@@ -29,10 +30,21 @@ export default function MealDetail() {
     addedSugars: t?.addedSugars ?? sampleTargets.addedSugars,
   };
 
-  if (!meal) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-primary animate-spin" />
+      </div>
+    );
+  }
+
+  if (!meal) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-5 text-center">
         <p className="text-muted-foreground">Meal not found</p>
+        <button onClick={() => navigate(-1)} className="text-sm text-primary font-medium">
+          Go back
+        </button>
       </div>
     );
   }
@@ -49,9 +61,13 @@ export default function MealDetail() {
       </div>
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="px-5 space-y-4">
-        {/* Image placeholder */}
-        <div className="w-full h-48 rounded-2xl bg-secondary flex items-center justify-center">
-          <p className="text-sm text-muted-foreground">📸 Meal Photo</p>
+        {/* Image */}
+        <div className="w-full h-48 rounded-2xl bg-secondary flex items-center justify-center overflow-hidden">
+          {meal.imageUrl ? (
+            <img src={meal.imageUrl} alt={typeLabels[meal.type]} className="w-full h-full object-cover" />
+          ) : (
+            <p className="text-sm text-muted-foreground">📸 No photo</p>
+          )}
         </div>
 
         {/* Foods */}
@@ -63,11 +79,15 @@ export default function MealDetail() {
             </button>
           </div>
           <div className="space-y-2">
-            {meal.foods.map((food, i) => (
-              <div key={i} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
-                <span className="text-sm text-foreground">{food}</span>
-              </div>
-            ))}
+            {meal.foods.length === 0 ? (
+              <p className="text-xs text-muted-foreground">No foods recorded.</p>
+            ) : (
+              meal.foods.map((food, i) => (
+                <div key={i} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                  <span className="text-sm text-foreground">{food}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

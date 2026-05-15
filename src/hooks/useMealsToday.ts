@@ -51,6 +51,28 @@ function rowToMealCard(row: MealRow): MealCardData {
   };
 }
 
+export function useMeal(id: string | undefined) {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["meals", "byId", id, user?.id] as const,
+    enabled: !!user && !!id,
+    queryFn: async (): Promise<MealCardData | null> => {
+      if (!user || !id) return null;
+      const { data, error } = await supabase
+        .from("meals")
+        .select("*")
+        .eq("id", id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) {
+        console.error("[useMeal] supabase error:", error);
+        throw error;
+      }
+      return data ? rowToMealCard(data) : null;
+    },
+  });
+}
+
 export function useMealsToday() {
   const { user } = useAuth();
 

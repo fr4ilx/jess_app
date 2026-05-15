@@ -231,7 +231,7 @@ export default function AddMeal() {
       console.error("Failed to save meal:", err);
       toast.error("Couldn't save meal — try again.");
     } finally {
-      setTimeout(() => navigate("/"), 1500);
+      setTimeout(() => navigate("/today"), 1500);
     }
   };
 
