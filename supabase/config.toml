@@ -1,1 +1,11 @@
 project_id = "jfbwobmkdaegzooqhzvf"
+
+# Sandbox-friendly: these functions are stateless OpenAI proxies and the app
+# supports unauthenticated browsing. They don't read user data, so requiring a
+# JWT just locks out sandbox users (publishable-key-only calls return 401).
+# Auth-gating happens at the meals table (RLS) and at sign-in for persistence.
+[functions.detect-foods]
+verify_jwt = false
+
+[functions.panda-chat]
+verify_jwt = false
