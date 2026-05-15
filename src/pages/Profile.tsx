@@ -41,6 +41,16 @@ function fromCurrent(c: CurrentProfile): EditableProfile {
   };
 }
 
+const kgFromLb = (lb: number) => lb * 0.45359237;
+const lbFromKg = (kg: number) => kg / 0.45359237;
+const cmFromFeetInches = (feet: number, inches: number) => feet * 30.48 + inches * 2.54;
+const feetInchesFromCm = (cm: number) => {
+  const totalInches = cm / 2.54;
+  const feet = Math.floor(totalInches / 12);
+  const inches = Math.round(totalInches - feet * 12);
+  return { feet, inches };
+};
+
 export default function Profile() {
   const navigate = useNavigate();
   const current = useCurrentProfile();
@@ -49,6 +59,8 @@ export default function Profile() {
   const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<EditableProfile>(() => fromCurrent(current));
   const [signingOut, setSigningOut] = useState(false);
+  const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg");
+  const [heightUnit, setHeightUnit] = useState<"cm" | "ftin">("cm");
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -136,22 +148,97 @@ export default function Profile() {
               </select>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Height (cm)</label>
-              <input
-                type="number"
-                value={profile.height_cm}
-                onChange={(e) => update("height_cm", Number(e.target.value))}
-                className="w-full px-3 py-2.5 rounded-xl bg-secondary text-sm text-foreground border-0 focus:ring-2 focus:ring-primary outline-none"
-              />
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs text-muted-foreground">Height</label>
+                <button
+                  type="button"
+                  onClick={() => setHeightUnit(heightUnit === "cm" ? "ftin" : "cm")}
+                  className="text-[11px] text-primary font-medium"
+                >
+                  {heightUnit === "cm" ? "Switch to ft/in" : "Switch to cm"}
+                </button>
+              </div>
+              {heightUnit === "cm" ? (
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={profile.height_cm}
+                    onChange={(e) => update("height_cm", Number(e.target.value))}
+                    className="w-full px-3 py-2.5 pr-10 rounded-xl bg-secondary text-sm text-foreground border-0 focus:ring-2 focus:ring-primary outline-none"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">cm</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={3}
+                      max={8}
+                      value={feetInchesFromCm(profile.height_cm).feet || ""}
+                      onChange={(e) => {
+                        const f = Number(e.target.value);
+                        if (!Number.isFinite(f)) return;
+                        update("height_cm", Math.round(cmFromFeetInches(f, feetInchesFromCm(profile.height_cm).inches)));
+                      }}
+                      placeholder="5"
+                      className="w-full px-3 py-2.5 pr-8 rounded-xl bg-secondary text-sm text-foreground border-0 focus:ring-2 focus:ring-primary outline-none"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">ft</span>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={0}
+                      max={11}
+                      value={feetInchesFromCm(profile.height_cm).inches || ""}
+                      onChange={(e) => {
+                        const i = Number(e.target.value);
+                        if (!Number.isFinite(i)) return;
+                        update("height_cm", Math.round(cmFromFeetInches(feetInchesFromCm(profile.height_cm).feet, i)));
+                      }}
+                      placeholder="9"
+                      className="w-full px-3 py-2.5 pr-8 rounded-xl bg-secondary text-sm text-foreground border-0 focus:ring-2 focus:ring-primary outline-none"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">in</span>
+                  </div>
+                </div>
+              )}
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Weight (kg)</label>
-              <input
-                type="number"
-                value={profile.weight_kg}
-                onChange={(e) => update("weight_kg", Number(e.target.value))}
-                className="w-full px-3 py-2.5 rounded-xl bg-secondary text-sm text-foreground border-0 focus:ring-2 focus:ring-primary outline-none"
-              />
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs text-muted-foreground">Weight</label>
+                <button
+                  type="button"
+                  onClick={() => setWeightUnit(weightUnit === "kg" ? "lb" : "kg")}
+                  className="text-[11px] text-primary font-medium"
+                >
+                  {weightUnit === "kg" ? "Switch to lb" : "Switch to kg"}
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  type="number"
+                  step="0.1"
+                  value={
+                    weightUnit === "kg"
+                      ? profile.weight_kg
+                      : Math.round(lbFromKg(profile.weight_kg) * 10) / 10
+                  }
+                  onChange={(e) => {
+                    const n = Number(e.target.value);
+                    if (!Number.isFinite(n)) return;
+                    update(
+                      "weight_kg",
+                      weightUnit === "kg" ? n : Math.round(kgFromLb(n) * 10) / 10
+                    );
+                  }}
+                  className="w-full px-3 py-2.5 pr-10 rounded-xl bg-secondary text-sm text-foreground border-0 focus:ring-2 focus:ring-primary outline-none"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                  {weightUnit}
+                </span>
+              </div>
             </div>
           </div>
         </div>
