@@ -98,31 +98,67 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
+      const text = await response.text();
+      console.error("OpenAI error:", response.status, text);
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again shortly." }), {
+        return new Response(JSON.stringify({ error: "OpenAI rate limit. Try again shortly." }), {
           status: 429,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add funds." }), {
-          status: 402,
+      if (response.status === 401) {
+        return new Response(JSON.stringify({ error: "OpenAI auth failed — check OPENAI_API_KEY secret." }), {
+          status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const text = await response.text();
-      console.error("OpenAI error:", response.status, text);
-      throw new Error(`OpenAI error [${response.status}]`);
+      // Surface the OpenAI message to the caller so the toast is actionable.
+      return new Response(JSON.stringify({ error: `OpenAI [${response.status}]: ${text.slice(0, 300)}` }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    const message = data.choices?.[0]?.message;
+    const toolCall = message?.tool_calls?.[0];
 
-    if (!toolCall?.function?.arguments) {
-      throw new Error("No food detection data returned from AI");
+    let result: { foods: unknown } | null = null;
+
+    if (toolCall?.function?.arguments) {
+      try {
+        result = JSON.parse(toolCall.function.arguments);
+      } catch (e) {
+        console.error("Failed to parse tool args:", toolCall.function.arguments, e);
+      }
     }
 
-    const result = JSON.parse(toolCall.function.arguments);
+    // Fallback: if the model returned plain text instead of a tool call, try to
+    // pull a JSON object out of message.content. Helps when OpenAI ignores the
+    // tool_choice for a non-food / blank image and just refuses in prose.
+    if (!result && typeof message?.content === "string") {
+      const match = message.content.match(/\{[\s\S]*\}/);
+      if (match) {
+        try {
+          result = JSON.parse(match[0]);
+        } catch {
+          /* swallow */
+        }
+      }
+    }
+
+    if (!result || !Array.isArray((result as { foods?: unknown }).foods)) {
+      console.error("No tool_call returned. Full response:", JSON.stringify(data).slice(0, 800));
+      const refusal = typeof message?.content === "string" ? message.content.slice(0, 200) : "";
+      return new Response(
+        JSON.stringify({
+          error: refusal
+            ? `AI didn't detect any food: ${refusal}`
+            : "AI didn't return food data — try a clearer photo.",
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

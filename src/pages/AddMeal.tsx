@@ -99,7 +99,8 @@ export default function AddMeal() {
         }
       } catch (err) {
         console.error("Food detection failed:", err);
-        toast.error("Failed to detect foods. You can add items manually.");
+        const msg = err instanceof Error ? err.message : "Unknown error";
+        toast.error(`Detection failed: ${msg}. You can add items manually.`);
         setFoods([]);
         setStep("review");
       }
