@@ -21,24 +21,27 @@ serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    if (!OPENAI_API_KEY) {
+      throw new Error("OPENAI_API_KEY is not configured");
     }
 
-    // Use a vision-capable model to analyze the meal photo
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const imageUrl = imageBase64.startsWith("data:")
+      ? imageBase64
+      : `data:image/jpeg;base64,${imageBase64}`;
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: `You are a food detection expert. Analyze the meal photo and identify all visible food items. For each food, estimate a reasonable portion size in grams and provide nutrition estimates per that portion. Be specific about the food (e.g. "grilled salmon fillet" not just "fish"). Always respond using the provided tool.`,
+            content: `You are a food detection expert. Analyze the meal photo and identify all visible food items. For each food, estimate a reasonable portion size in grams and provide nutrition estimates per that portion. Be specific about the food (e.g. "grilled salmon fillet" not just "fish"). Always respond by calling the provided tool.`,
           },
           {
             role: "user",
@@ -49,9 +52,7 @@ serve(async (req) => {
               },
               {
                 type: "image_url",
-                image_url: {
-                  url: imageBase64.startsWith("data:") ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`,
-                },
+                image_url: { url: imageUrl },
               },
             ],
           },
@@ -110,8 +111,8 @@ serve(async (req) => {
         });
       }
       const text = await response.text();
-      console.error("AI gateway error:", response.status, text);
-      throw new Error(`AI gateway error [${response.status}]`);
+      console.error("OpenAI error:", response.status, text);
+      throw new Error(`OpenAI error [${response.status}]`);
     }
 
     const data = await response.json();

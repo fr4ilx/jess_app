@@ -1,4 +1,7 @@
 import { useOnboardingStore, type OnboardingState } from "@/store/onboarding";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { fromProfileRow } from "@/lib/onboarding/fromProfileRow";
 import { calculateTargets, type DailyTargets } from "@/lib/calculateTargets";
 
 export type CurrentProfile = OnboardingState & {
@@ -10,38 +13,73 @@ export type CurrentProfile = OnboardingState & {
 /**
  * Reads the current user's profile + computed daily targets.
  *
- * Source of truth is Zustand (localStorage-persisted). Per-step writes to
- * Supabase happen via useSaveOnboardingStep — Supabase is the durable store,
- * Zustand is the in-flight working copy. For this prototype phase we read
- * exclusively from Zustand; cross-device hydration from Supabase is a follow-up.
+ * Source of truth:
+ * - **Authenticated** → Supabase `profiles` row (durable). The Zustand store
+ *   provides the `name` field (which isn't persisted server-side) and a
+ *   fallback for fields the server row may not yet have if onboarding was
+ *   interrupted mid-flow.
+ * - **Sandbox (no session)** → Zustand store (localStorage-persisted).
+ *
+ * Targets are computed on the fly from the resolved inputs whenever the
+ * required fields are present.
  */
 export function useCurrentProfile(): CurrentProfile {
-  const state = useOnboardingStore();
+  const { user } = useAuth();
+  const local = useOnboardingStore();
+  const { data: profileRow } = useProfile();
+
+  // Prefer server fields when available; fall back to local store per-field.
+  const server = profileRow ? fromProfileRow(profileRow) : null;
+  const pick = <K extends keyof OnboardingState>(key: K): OnboardingState[K] => {
+    if (server && server[key] != null) return server[key];
+    return local[key];
+  };
+
+  const resolved: OnboardingState = user && server
+    ? {
+        // Name lives only in the local store (not persisted to profiles).
+        name: local.name,
+        age: pick("age"),
+        sex: pick("sex"),
+        height_cm: pick("height_cm"),
+        weight_kg: pick("weight_kg"),
+        activity: pick("activity"),
+        goal: pick("goal"),
+        glp1: {
+          onMedication: server.glp1.onMedication ?? local.glp1.onMedication,
+          medication: server.glp1.medication ?? local.glp1.medication,
+          dose_mg: server.glp1.dose_mg ?? local.glp1.dose_mg,
+          startedAt: server.glp1.startedAt ?? local.glp1.startedAt,
+          targetWeightKg: local.glp1.targetWeightKg,
+        },
+        dailyTargets: local.dailyTargets,
+      }
+    : local;
 
   const hasProfileData =
-    state.age != null &&
-    state.sex != null &&
-    state.height_cm != null &&
-    state.weight_kg != null &&
-    state.activity != null &&
-    state.goal != null;
+    resolved.age != null &&
+    resolved.sex != null &&
+    resolved.height_cm != null &&
+    resolved.weight_kg != null &&
+    resolved.activity != null &&
+    resolved.goal != null;
 
   // Use stored targets if present (e.g. user revisited TargetsReveal which sets them),
   // otherwise compute on the fly from the inputs.
-  let dailyTargets: DailyTargets | null = state.dailyTargets;
+  let dailyTargets: DailyTargets | null = resolved.dailyTargets;
   if (!dailyTargets && hasProfileData) {
     dailyTargets = calculateTargets({
-      age: state.age!,
-      sex: state.sex!,
-      height_cm: state.height_cm!,
-      weight_kg: state.weight_kg!,
-      activity: state.activity!,
-      goal: state.goal!,
+      age: resolved.age!,
+      sex: resolved.sex!,
+      height_cm: resolved.height_cm!,
+      weight_kg: resolved.weight_kg!,
+      activity: resolved.activity!,
+      goal: resolved.goal!,
     });
   }
 
   return {
-    ...state,
+    ...resolved,
     dailyTargets,
     hasProfileData,
   };

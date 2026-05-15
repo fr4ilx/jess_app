@@ -3,13 +3,17 @@ import { Plus, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MacroRing } from "@/components/MacroRing";
 import { MacroBar } from "@/components/MacroBar";
+import { MealCard } from "@/components/MealCard";
 import { PandaLogo } from "@/components/onboarding/PandaLogo";
 import { PrimaryCta } from "@/components/onboarding/PrimaryCta";
 import { useCurrentProfile } from "@/hooks/useCurrentProfile";
+import { useMealsToday } from "@/hooks/useMealsToday";
+import { getDailyTotals } from "@/lib/nutrition";
 
 export default function Today() {
   const navigate = useNavigate();
   const profile = useCurrentProfile();
+  const { meals } = useMealsToday();
 
   // No onboarding data yet (e.g. user cleared localStorage and visited /today directly).
   if (!profile.hasProfileData || !profile.dailyTargets) {
@@ -28,7 +32,8 @@ export default function Today() {
   }
 
   const targets = profile.dailyTargets;
-  const eaten = 0; // No meal tracking yet.
+  const totals = getDailyTotals(meals);
+  const eaten = totals.calories;
   const caloriesLeft = Math.max(targets.calories - eaten, 0);
   const greetingName = profile.name.trim() || "there";
 
@@ -80,9 +85,9 @@ export default function Today() {
         transition={{ delay: 0.2 }}
         className="flex items-center justify-around px-5 py-6"
       >
-        <MacroRing value={0} target={targets.protein} color="protein" label="Protein" />
-        <MacroRing value={0} target={targets.carbs} color="carbs" label="Carbs" />
-        <MacroRing value={0} target={targets.fat} color="fat" label="Fat" />
+        <MacroRing value={totals.protein} target={targets.protein} color="protein" label="Protein" />
+        <MacroRing value={totals.carbs} target={targets.carbs} color="carbs" label="Carbs" />
+        <MacroRing value={totals.fat} target={targets.fat} color="fat" label="Fat" />
       </motion.div>
 
       {/* Cardio nutrients */}
@@ -99,10 +104,10 @@ export default function Today() {
             </h3>
             <Sparkles className="w-3 h-3 text-primary" aria-hidden="true" />
           </div>
-          <MacroBar value={0} target={targets.satFat} color="saturated-fat" label="Sat. Fat" />
-          <MacroBar value={0} target={targets.sodium} color="sodium" label="Sodium" unit=" mg" />
-          <MacroBar value={0} target={targets.fiber} color="fiber" label="Fiber" />
-          <MacroBar value={0} target={targets.addedSugars} color="added-sugars" label="Added Sugars" />
+          <MacroBar value={totals.saturatedFat} target={targets.satFat} color="saturated-fat" label="Sat. Fat" />
+          <MacroBar value={totals.sodium} target={targets.sodium} color="sodium" label="Sodium" unit=" mg" />
+          <MacroBar value={totals.fiber} target={targets.fiber} color="fiber" label="Fiber" />
+          <MacroBar value={totals.addedSugars} target={targets.addedSugars} color="added-sugars" label="Added Sugars" />
         </div>
       </motion.div>
 
@@ -119,15 +124,32 @@ export default function Today() {
           </button>
         </div>
 
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
-            <Plus className="w-6 h-6 text-muted-foreground" />
+        {meals.length > 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="space-y-3 pb-6"
+          >
+            {meals.map((meal) => (
+              <MealCard
+                key={meal.id}
+                meal={meal}
+                onClick={() => navigate(`/meal/${meal.id}`)}
+              />
+            ))}
+          </motion.div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
+              <Plus className="w-6 h-6 text-muted-foreground" />
+            </div>
+            <p className="text-sm text-muted-foreground">No meals logged yet</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Tap "Add" to log your first meal
+            </p>
           </div>
-          <p className="text-sm text-muted-foreground">No meals logged yet</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Tap "Add" to log your first meal
-          </p>
-        </div>
+        )}
       </div>
     </div>
   );

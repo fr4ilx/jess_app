@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { MacroBar } from "@/components/MacroBar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAddMeal } from "@/hooks/useMealsToday";
 
 type MealType = "breakfast" | "lunch" | "dinner" | "snack";
 
@@ -48,6 +49,7 @@ const mealTypes: { value: MealType; label: string; emoji: string }[] = [
 
 export default function AddMeal() {
   const navigate = useNavigate();
+  const addMeal = useAddMeal();
   const [step, setStep] = useState<"upload" | "detecting" | "review" | "confirm">("upload");
   const [mealType, setMealType] = useState<MealType>("lunch");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -197,9 +199,40 @@ export default function AddMeal() {
     { calories: 0, protein: 0, carbs: 0, fat: 0, saturatedFat: 0, sodium: 0, fiber: 0, addedSugars: 0 }
   );
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setStep("confirm");
-    setTimeout(() => navigate("/"), 1500);
+    try {
+      await addMeal.mutateAsync({
+        type: mealType,
+        calories: totals.calories,
+        protein: totals.protein,
+        carbs: totals.carbs,
+        fat: totals.fat,
+        saturated_fat: totals.saturatedFat,
+        sodium: totals.sodium,
+        fiber: totals.fiber,
+        added_sugars: totals.addedSugars,
+        foods: foods.map((f) => ({
+          name: f.name,
+          portion: f.portion,
+          unit: f.unit,
+          calories: f.calories,
+          protein: f.protein,
+          carbs: f.carbs,
+          fat: f.fat,
+          saturatedFat: f.saturatedFat,
+          sodium: f.sodium,
+          fiber: f.fiber,
+          addedSugars: f.addedSugars,
+        })),
+        image_url: null,
+      });
+    } catch (err) {
+      console.error("Failed to save meal:", err);
+      toast.error("Couldn't save meal — try again.");
+    } finally {
+      setTimeout(() => navigate("/"), 1500);
+    }
   };
 
   return (

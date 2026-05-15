@@ -4,11 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { MacroRing } from "@/components/MacroRing";
 import { MacroBar } from "@/components/MacroBar";
 import { MealCard } from "@/components/MealCard";
-import { sampleMeals, sampleTargets, sampleProfile, getDailyTotals } from "@/lib/nutrition";
+import { sampleTargets, sampleProfile, getDailyTotals } from "@/lib/nutrition";
+import { useMealsToday } from "@/hooks/useMealsToday";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const totals = getDailyTotals(sampleMeals);
+  const { meals } = useMealsToday();
+  const totals = getDailyTotals(meals);
   const targets = sampleTargets;
 
   const caloriesLeft = Math.max(targets.calories - totals.calories, 0);
@@ -101,7 +103,7 @@ export default function Dashboard() {
           transition={{ delay: 0.3 }}
           className="space-y-3"
         >
-          {sampleMeals.map((meal) => (
+          {meals.map((meal) => (
             <MealCard
               key={meal.id}
               meal={meal}
@@ -110,7 +112,7 @@ export default function Dashboard() {
           ))}
         </motion.div>
 
-        {sampleMeals.length === 0 && (
+        {meals.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
               <Plus className="w-6 h-6 text-muted-foreground" />

@@ -132,6 +132,68 @@ export type Database = {
           },
         ]
       }
+      meals: {
+        Row: {
+          id: string
+          user_id: string
+          type: "breakfast" | "lunch" | "dinner" | "snack"
+          calories: number
+          protein: number
+          carbs: number
+          fat: number
+          saturated_fat: number
+          sodium: number
+          fiber: number
+          added_sugars: number
+          foods: Json
+          image_url: string | null
+          logged_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          type: "breakfast" | "lunch" | "dinner" | "snack"
+          calories?: number
+          protein?: number
+          carbs?: number
+          fat?: number
+          saturated_fat?: number
+          sodium?: number
+          fiber?: number
+          added_sugars?: number
+          foods?: Json
+          image_url?: string | null
+          logged_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          type?: "breakfast" | "lunch" | "dinner" | "snack"
+          calories?: number
+          protein?: number
+          carbs?: number
+          fat?: number
+          saturated_fat?: number
+          sodium?: number
+          fiber?: number
+          added_sugars?: number
+          foods?: Json
+          image_url?: string | null
+          logged_at?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
