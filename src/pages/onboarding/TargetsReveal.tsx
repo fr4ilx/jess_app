@@ -27,12 +27,11 @@ export default function TargetsReveal() {
   const navigate = useNavigate();
   const { dailyTargets, calculateAndSetTargets } = useOnboardingStore();
 
-  // Compute targets on mount if not already set.
+  // Always recompute on visit so stale cached values can't linger after edits.
   useEffect(() => {
-    if (!dailyTargets) {
-      calculateAndSetTargets();
-    }
-  }, [dailyTargets, calculateAndSetTargets]);
+    calculateAndSetTargets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex-1 px-5 pt-4 pb-8">

@@ -54,7 +54,18 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
     (set, get) => ({
       ...initialState,
 
-      setField: (key, value) => set({ [key]: value } as Partial<OnboardingState>),
+      setField: (key, value) =>
+        set((state) => {
+          const patch: Partial<OnboardingState> = { [key]: value };
+          // Invalidate cached targets whenever a field that feeds calculateTargets changes.
+          // Otherwise edits in Profile leave TargetsReveal / useCurrentProfile reading
+          // stale numbers computed from the previous inputs.
+          const targetKeys = ["age", "sex", "height_cm", "weight_kg", "activity", "goal"] as const;
+          if ((targetKeys as readonly string[]).includes(key) && state.dailyTargets) {
+            patch.dailyTargets = null;
+          }
+          return patch;
+        }),
 
       setGlp1Field: (key, value) =>
         set((state) => ({ glp1: { ...state.glp1, [key]: value } })),
