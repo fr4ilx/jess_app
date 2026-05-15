@@ -70,7 +70,16 @@ export default function AddMeal() {
           body: { imageBase64: base64 },
         });
 
-        if (error) throw error;
+        if (error) {
+          // FunctionsHttpError exposes the raw Response on .context — read the
+          // body so we can surface the real error message from the function.
+          const ctx = (error as { context?: Response }).context;
+          if (ctx && typeof ctx.json === "function") {
+            const body = await ctx.json().catch(() => null);
+            if (body?.error) throw new Error(body.error);
+          }
+          throw error;
+        }
         if (data?.error) throw new Error(data.error);
 
         const detected: DetectedFood[] = (data.foods || []).map((f: any, i: number) => ({
