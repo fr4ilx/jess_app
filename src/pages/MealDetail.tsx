@@ -32,7 +32,7 @@ export default function MealDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-6 h-6 text-primary animate-spin" />
       </div>
     );
@@ -40,7 +40,7 @@ export default function MealDetail() {
 
   if (!meal) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-5 text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-5 text-center">
         <p className="text-muted-foreground">Meal not found</p>
         <button onClick={() => navigate(-1)} className="text-sm text-primary font-medium">
           Go back
@@ -50,7 +50,7 @@ export default function MealDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-8">
+    <div className="min-h-screen pb-8">
       {/* Header */}
       <div className="flex items-center gap-3 px-5 pt-12 pb-4">
         <button onClick={() => navigate(-1)} className="p-1 text-foreground">

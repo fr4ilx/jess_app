@@ -34,7 +34,7 @@ export function OnboardingLayout() {
   const overallProgress = info ? (info.section - 1 + info.local) / TOTAL_SECTIONS : 0;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <div className="px-5 pt-12 pb-2">
         <div className="flex items-center justify-between mb-3">
           <BackButton />

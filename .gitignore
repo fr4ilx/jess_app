@@ -30,3 +30,6 @@ dist-ssr
 
 # Supabase CLI local state
 supabase/.temp/
+
+# Brainstorming session artifacts (superpowers skill)
+.superpowers/

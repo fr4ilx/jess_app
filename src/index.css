@@ -106,6 +106,12 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
+    background-image:
+      radial-gradient(60% 45% at 92% 8%, hsl(var(--blob-sage) / 0.7) 0%, transparent 60%),
+      radial-gradient(55% 40% at 6% 78%, hsl(var(--blob-peach) / 0.75) 0%, transparent 65%),
+      radial-gradient(35% 25% at 85% 70%, hsl(var(--blob-sage) / 0.45) 0%, transparent 65%);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -123,6 +129,6 @@
   }
 
   .bottom-nav-safe {
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5rem);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6.5rem);
   }
 }

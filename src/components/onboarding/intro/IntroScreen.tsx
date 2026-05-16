@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { IntroBlobs } from "./IntroBlobs";
 import { PaginationDots } from "./PaginationDots";
 
 type Props = {
@@ -29,9 +28,7 @@ export const IntroScreen = ({
   const navigate = useNavigate();
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-background">
-      <IntroBlobs />
-
+    <div className="relative min-h-screen w-full">
       <div className="relative z-10 flex min-h-screen flex-col px-6 pb-8 pt-14">
         {/* Eyebrow chip */}
         <div className="flex justify-center">

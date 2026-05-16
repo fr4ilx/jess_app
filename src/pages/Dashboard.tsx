@@ -16,7 +16,7 @@ export default function Dashboard() {
   const caloriesLeft = Math.max(targets.calories - totals.calories, 0);
 
   return (
-    <div className="min-h-screen bg-background bottom-nav-safe">
+    <div className="min-h-screen bottom-nav-safe">
       {/* Header */}
       <div className="px-5 pt-12 pb-4">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>

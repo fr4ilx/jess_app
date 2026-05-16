@@ -27,7 +27,7 @@ export default function PandaWelcome() {
   const displayName = name.trim() || "there";
 
   return (
-    <div className="min-h-screen bg-background flex flex-col px-5 pt-16 pb-8">
+    <div className="min-h-screen flex flex-col px-5 pt-16 pb-8">
       <FadeIn className="flex-1 flex flex-col items-center justify-center text-center">
         <PandaLogo size={160} className="mb-8" />
 

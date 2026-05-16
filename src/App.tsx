@@ -4,7 +4,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BottomNav } from "@/components/BottomNav";
-import { FloatingPanda } from "@/components/FloatingPanda";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { OnboardingLayout } from "@/components/onboarding/OnboardingLayout";
 
@@ -40,6 +39,9 @@ import AddMeal from "./pages/AddMeal";
 import WeeklyInsights from "./pages/WeeklyInsights";
 import Profile from "./pages/Profile";
 import MealDetail from "./pages/MealDetail";
+import Coach from "./pages/Coach";
+import LogShot from "./pages/LogShot";
+import LogWeight from "./pages/LogWeight";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -88,13 +90,15 @@ const App = () => (
               <Route path="/dashboard" element={<Navigate to="/today" replace />} />
               <Route path="/add-meal" element={<AddMeal />} />
               <Route path="/insights" element={<WeeklyInsights />} />
+              <Route path="/coach" element={<Coach />} />
+              <Route path="/log-shot" element={<LogShot />} />
+              <Route path="/log-weight" element={<LogWeight />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/meal/:id" element={<MealDetail />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
             <BottomNav />
-            <FloatingPanda />
           </div>
         </BrowserRouter>
       </TooltipProvider>

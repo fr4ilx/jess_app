@@ -7,7 +7,7 @@ export default function Welcome() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col px-5 pt-16 pb-8">
+    <div className="min-h-screen flex flex-col px-5 pt-16 pb-8">
       <FadeIn className="flex-1 flex flex-col justify-center">
         <h1 className="text-4xl font-bold font-display text-foreground leading-tight">
           Nutrition for your GLP-1 journey.

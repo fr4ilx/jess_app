@@ -12,7 +12,7 @@ export default function Splash() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center">
       <FadeIn duration={600}>
         <div className="flex flex-col items-center">
           <PandaLogo size={120} className="mb-5" />
