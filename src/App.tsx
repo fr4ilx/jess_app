@@ -27,6 +27,13 @@ import Glp1Details from "./pages/onboarding/Glp1Details";
 import TargetsReveal from "./pages/onboarding/TargetsReveal";
 import PandaWelcome from "./pages/onboarding/PandaWelcome";
 
+// Design Option 3 — App Store-style intro carousel (sage green)
+import IntroProgressPhotos from "./pages/onboarding/intro/IntroProgressPhotos";
+import IntroMedication from "./pages/onboarding/intro/IntroMedication";
+import IntroFoodLog from "./pages/onboarding/intro/IntroFoodLog";
+import IntroInsights from "./pages/onboarding/intro/IntroInsights";
+import IntroTargets from "./pages/onboarding/intro/IntroTargets";
+
 // Existing app pages (Dashboard now redirects to /today; the file is kept for
 // reference but no longer routed to)
 import AddMeal from "./pages/AddMeal";
@@ -51,6 +58,13 @@ const App = () => (
               <Route path="/welcome" element={<Welcome />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login />} />
+
+              {/* Intro carousel (no OnboardingLayout — full-bleed) */}
+              <Route path="/onboarding/intro/photos" element={<IntroProgressPhotos />} />
+              <Route path="/onboarding/intro/medication" element={<IntroMedication />} />
+              <Route path="/onboarding/intro/food" element={<IntroFoodLog />} />
+              <Route path="/onboarding/intro/insights" element={<IntroInsights />} />
+              <Route path="/onboarding/intro/targets" element={<IntroTargets />} />
 
               {/* Sandbox mode: onboarding + /today are publicly accessible so the
                   flow can be walked without signing up. If a session exists,
