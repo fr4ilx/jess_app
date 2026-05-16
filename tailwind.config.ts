@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         display: ["var(--font-display)", "sans-serif"],
         body: ["var(--font-body)", "sans-serif"],
+        serif: ["var(--font-serif)", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -65,6 +66,11 @@ export default {
           elevated: "hsl(var(--surface-elevated))",
           sunken: "hsl(var(--surface-sunken))",
         },
+        blob: {
+          sage: "hsl(var(--blob-sage))",
+          peach: "hsl(var(--blob-peach))",
+        },
+        ink: "hsl(var(--ink))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

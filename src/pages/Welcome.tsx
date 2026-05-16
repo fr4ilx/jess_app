@@ -18,7 +18,7 @@ export default function Welcome() {
         </p>
       </FadeIn>
 
-      <PrimaryCta onClick={() => navigate("/onboarding/name")}>
+      <PrimaryCta onClick={() => navigate("/onboarding/intro/photos")}>
         Get started
         <ArrowRight className="w-4 h-4" />
       </PrimaryCta>
