@@ -33,3 +33,4 @@ supabase/.temp/
 
 # Brainstorming session artifacts (superpowers skill)
 .superpowers/
+.claude/worktrees/

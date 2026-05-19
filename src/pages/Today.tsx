@@ -2,7 +2,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  Calendar,
   Droplets,
   Sprout,
   Minus,
@@ -11,6 +10,7 @@ import {
   Scale,
   Flame,
 } from "lucide-react";
+import { DateSelector } from "@/components/DateSelector";
 import { PandaLogo } from "@/components/onboarding/PandaLogo";
 import { PrimaryCta } from "@/components/onboarding/PrimaryCta";
 import { useCurrentProfile } from "@/hooks/useCurrentProfile";
@@ -63,19 +63,15 @@ export default function Today() {
       <motion.header
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between px-1"
+        className="space-y-3 px-1"
       >
-        <div className="flex items-center gap-2">
-          <PandaLogo size={28} />
-          <span className="text-lg font-bold tracking-tight text-foreground">PandaWell</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <PandaLogo size={40} />
+            <span className="text-xl font-bold tracking-tight text-foreground">PandaWell</span>
+          </div>
         </div>
-        <button
-          type="button"
-          className="flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-semibold text-foreground backdrop-blur"
-        >
-          <Calendar className="h-4 w-4 text-primary" />
-          Today
-        </button>
+        <DateSelector />
       </motion.header>
 
       {/* 2-column bento grid */}

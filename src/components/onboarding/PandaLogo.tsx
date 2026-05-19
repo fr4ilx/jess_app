@@ -6,9 +6,8 @@ type Props = {
   className?: string;
 };
 
-// Brand mark. Looks for `/panda.png` (drop your logo file at public/panda.png).
-// Falls back to a Sparkles icon if the file isn't present yet so the layout
-// doesn't break during development.
+// Brand mark. Uses `public/panda_logo.png`. Falls back to a Sparkles icon if
+// the file isn't present yet so the layout doesn't break during development.
 export function PandaLogo({ size = 80, className = "" }: Props) {
   const [imgFailed, setImgFailed] = useState(false);
 
@@ -25,8 +24,8 @@ export function PandaLogo({ size = 80, className = "" }: Props) {
         />
       ) : (
         <img
-          src="/panda.png"
-          alt="Panda AI"
+          src="/panda_logo.png"
+          alt="PandaWell"
           width={size}
           height={size}
           className="w-full h-full object-cover"
