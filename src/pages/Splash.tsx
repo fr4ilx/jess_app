@@ -7,7 +7,7 @@ export default function Splash() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const t = setTimeout(() => navigate("/welcome", { replace: true }), 1800);
+    const t = setTimeout(() => navigate("/onboarding/name", { replace: true }), 1800);
     return () => clearTimeout(t);
   }, [navigate]);
 
