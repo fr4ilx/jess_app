@@ -8,8 +8,7 @@ import {
   Plus,
   Camera,
   Syringe,
-  Search,
-  Scale,
+  Droplets,
 } from "lucide-react";
 import {
   Sheet,
@@ -43,32 +42,25 @@ type QuickAction = {
 
 const QUICK_ACTIONS: QuickAction[] = [
   {
-    key: "scan",
-    label: "Scan Food",
+    key: "meal",
+    label: "Add Meal",
     icon: Camera,
     tint: "bg-primary/15 text-primary",
     run: (nav) => nav("/add-meal"),
   },
   {
+    key: "hydration",
+    label: "Add Hydration",
+    icon: Droplets,
+    tint: "bg-sky-100 text-sky-600",
+    run: () => toast.success("Added 8oz of water", { description: "Logged for today" }),
+  },
+  {
     key: "shot",
-    label: "Log a shot",
+    label: "Add Shot",
     icon: Syringe,
     tint: "bg-blob-sage/70 text-primary",
     run: (nav) => nav("/log-shot"),
-  },
-  {
-    key: "search",
-    label: "Search Food",
-    icon: Search,
-    tint: "bg-muted text-foreground",
-    run: (nav) => nav("/add-meal"),
-  },
-  {
-    key: "weight",
-    label: "Add Today's Weight",
-    icon: Scale,
-    tint: "bg-blob-peach text-accent-foreground",
-    run: (nav) => nav("/log-weight"),
   },
 ];
 
