@@ -127,7 +127,7 @@ export default function Today() {
       <motion.header
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="sticky top-0 z-30 space-y-3 bg-background/85 px-5 pb-3 pt-14 backdrop-blur-md"
+        className="sticky top-0 z-30 space-y-3 bg-background/85 px-5 pb-3 pt-6 backdrop-blur-md"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
