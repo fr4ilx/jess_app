@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Area,
@@ -32,6 +32,7 @@ import { DateSelector } from "@/components/DateSelector";
 import { useCurrentProfile } from "@/hooks/useCurrentProfile";
 import { useMealsToday } from "@/hooks/useMealsToday";
 import { getDailyTotals } from "@/lib/nutrition";
+import { getWaterToday, setWaterToday } from "@/lib/hydration";
 
 type Range = "7d" | "30d" | "90d" | "1y";
 
@@ -81,7 +82,26 @@ export default function WeeklyInsights() {
   const profile = useCurrentProfile();
   const { meals } = useMealsToday();
   const [range, setRange] = useState<Range>("7d");
-  const [waterOz, setWaterOz] = useState(0);
+  const [waterOz, setWaterOzState] = useState(0);
+
+  // Sync water from shared hydration store (updated by /log-hydration)
+  useEffect(() => {
+    setWaterOzState(getWaterToday());
+    const handle = () => setWaterOzState(getWaterToday());
+    window.addEventListener("pandawell:water-changed", handle);
+    window.addEventListener("storage", handle);
+    return () => {
+      window.removeEventListener("pandawell:water-changed", handle);
+      window.removeEventListener("storage", handle);
+    };
+  }, []);
+
+  const setWaterOz = (next: number | ((v: number) => number)) => {
+    const value = typeof next === "function" ? next(waterOz) : next;
+    const clamped = Math.max(0, value);
+    setWaterOzState(clamped);
+    setWaterToday(clamped);
+  };
   const [fiberExtraG, setFiberExtraG] = useState(0);
 
   // ---- Nutrition data -------------------------------------------------------

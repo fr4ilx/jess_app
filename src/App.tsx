@@ -42,6 +42,7 @@ import MealDetail from "./pages/MealDetail";
 import Coach from "./pages/Coach";
 import LogShot from "./pages/LogShot";
 import LogWeight from "./pages/LogWeight";
+import LogHydration from "./pages/LogHydration";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -93,6 +94,7 @@ const App = () => (
               <Route path="/coach" element={<Coach />} />
               <Route path="/log-shot" element={<LogShot />} />
               <Route path="/log-weight" element={<LogWeight />} />
+              <Route path="/log-hydration" element={<LogHydration />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/meal/:id" element={<MealDetail />} />
 

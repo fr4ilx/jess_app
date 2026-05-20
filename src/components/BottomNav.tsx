@@ -16,7 +16,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { toast } from "sonner";
 
 type Item = { path: string; icon: typeof Home; label: string };
 
@@ -53,7 +52,7 @@ const QUICK_ACTIONS: QuickAction[] = [
     label: "Add Hydration",
     icon: Droplets,
     tint: "bg-sky-100 text-sky-600",
-    run: () => toast.success("Added 8oz of water", { description: "Logged for today" }),
+    run: (nav) => nav("/log-hydration"),
   },
   {
     key: "shot",

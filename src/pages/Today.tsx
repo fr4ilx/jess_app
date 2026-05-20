@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -15,6 +15,8 @@ import { PandaLogo } from "@/components/onboarding/PandaLogo";
 import { PrimaryCta } from "@/components/onboarding/PrimaryCta";
 import { useCurrentProfile } from "@/hooks/useCurrentProfile";
 import { useMealsToday } from "@/hooks/useMealsToday";
+import { getDailyTotals } from "@/lib/nutrition";
+import { getWaterToday } from "@/lib/hydration";
 
 type DiaryEvent = {
   id: string;
@@ -43,10 +45,33 @@ const formatTimeOnly = (d: Date) => {
 
 const bucketLabelFor = (d: Date) => HOUR_BUCKETS[d.getHours()];
 
+const firstName = (full: string | undefined | null) =>
+  (full ?? "").trim().split(/\s+/)[0] ?? "";
+
 export default function Today() {
   const navigate = useNavigate();
   const profile = useCurrentProfile();
   const { meals } = useMealsToday();
+  const [waterOz, setWaterOz] = useState(0);
+
+  // Sync water from shared hydration store (updated by /log-hydration)
+  useEffect(() => {
+    setWaterOz(getWaterToday());
+    const handle = () => setWaterOz(getWaterToday());
+    window.addEventListener("pandawell:water-changed", handle);
+    window.addEventListener("storage", handle);
+    return () => {
+      window.removeEventListener("pandawell:water-changed", handle);
+      window.removeEventListener("storage", handle);
+    };
+  }, []);
+
+  // Macro totals for the 3 progress rings
+  const totals = getDailyTotals(meals);
+  const targets = profile.dailyTargets;
+  const proteinPct = targets ? Math.min(totals.protein / targets.protein, 1) : 0;
+  const fiberPct = targets ? Math.min(totals.fiber / targets.fiber, 1) : 0;
+  const waterPct = Math.min(waterOz / 64, 1);
 
   // ---- Build unified diary event list ---------------------------------------
   const events: DiaryEvent[] = useMemo(() => {
@@ -129,12 +154,14 @@ export default function Today() {
         animate={{ opacity: 1, y: 0 }}
         className="sticky top-0 z-30 space-y-3 bg-background/85 px-5 pb-3 pt-6 backdrop-blur-md"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <PandaLogo size={40} />
-            <span className="text-xl font-bold tracking-tight text-foreground">PandaWell</span>
-          </div>
-          <div className="flex items-center gap-1.5">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-xl font-bold leading-tight tracking-tight">
+            <span className="text-ink">Welcome,</span>{" "}
+            <span className="text-primary">
+              {firstName(profile.name) || "friend"}
+            </span>
+          </h1>
+          <div className="flex shrink-0 items-center gap-1.5">
             <StreakBadge count={7} />
             <PointsBadge count={250} />
           </div>
@@ -143,6 +170,13 @@ export default function Today() {
       </motion.header>
 
       <div className="space-y-4 px-4 pt-4">
+
+      {/* 3 macro progress rings */}
+      <div className="grid grid-cols-3 gap-3">
+        <MacroDot label="Protein" pct={proteinPct} color="#F59E0B" />
+        <MacroDot label="Fiber" pct={fiberPct} color="#10B981" />
+        <MacroDot label="Hydration" pct={waterPct} color="#3B82F6" />
+      </div>
 
       {/* Diary list */}
       {grouped.length === 0 ? (
@@ -182,6 +216,46 @@ function parseTimeString(timeStr: string): Date {
 }
 
 /* ----- Subcomponents ----- */
+
+function MacroDot({
+  label,
+  pct,
+  color,
+}: {
+  label: string;
+  pct: number;
+  color: string;
+}) {
+  const size = 64;
+  const stroke = 6;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  return (
+    <div className="flex flex-col items-center gap-1.5 rounded-2xl bg-white/70 px-2 py-3 backdrop-blur">
+      <svg width={size} height={size} className="-rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="hsl(var(--muted))"
+          strokeWidth={stroke}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke={color}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={`${pct * c} ${c}`}
+        />
+      </svg>
+      <span className="text-xs font-semibold text-foreground">{label}</span>
+    </div>
+  );
+}
 
 function StreakBadge({ count }: { count: number }) {
   return (

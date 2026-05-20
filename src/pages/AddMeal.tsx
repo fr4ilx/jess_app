@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, X, Plus, Minus, Check, ArrowLeft, Loader2, Search } from "lucide-react";
+import { Camera, X, Plus, Minus, Check, ArrowLeft, Loader2, Search, Barcode, Keyboard, Zap, Image as ImageIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MacroBar } from "@/components/MacroBar";
 import { supabase } from "@/integrations/supabase/client";
@@ -247,57 +247,135 @@ export default function AddMeal() {
 
   return (
     <div className="min-h-screen bottom-nav-safe">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-5 pt-12 pb-4">
-        <button onClick={() => navigate(-1)} className="p-1 text-foreground">
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <h1 className="text-xl font-bold font-display text-foreground">Add Meal</h1>
-      </div>
+      {step !== "upload" && (
+        <>
+          {/* Header for non-upload steps */}
+          <div className="flex items-center gap-3 px-5 pt-12 pb-4">
+            <button onClick={() => navigate(-1)} className="p-1 text-foreground">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <h1 className="text-xl font-bold font-display text-foreground">Add Meal</h1>
+          </div>
 
-      {/* Meal type selector */}
-      <div className="flex gap-2 px-5 mb-5 overflow-x-auto no-scrollbar">
-        {mealTypes.map((t) => (
-          <button
-            key={t.value}
-            onClick={() => setMealType(t.value)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-              mealType === t.value
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground"
-            }`}
-          >
-            <span>{t.emoji}</span>
-            {t.label}
-          </button>
-        ))}
-      </div>
+          {/* Meal type selector */}
+          <div className="flex gap-2 px-5 mb-5 overflow-x-auto no-scrollbar">
+            {mealTypes.map((t) => (
+              <button
+                key={t.value}
+                onClick={() => setMealType(t.value)}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                  mealType === t.value
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground"
+                }`}
+              >
+                <span>{t.emoji}</span>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       <AnimatePresence mode="wait">
         {step === "upload" && (
           <motion.div
             key="upload"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="px-5"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex flex-col bg-gradient-to-br from-zinc-900 via-stone-900 to-zinc-800 text-white"
+            style={{ minHeight: "100dvh" }}
           >
-            <label className="flex flex-col items-center justify-center gap-4 h-56 rounded-2xl border-2 border-dashed border-border bg-secondary/50 cursor-pointer hover:bg-secondary transition-colors">
-              <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-                <Camera className="w-6 h-6 text-primary" />
+            {/* Top bar */}
+            <div className="flex items-center justify-between px-5 pt-12 pb-4">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 backdrop-blur-md transition-colors active:bg-white/25"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 backdrop-blur-md transition-colors active:bg-white/25"
+                aria-label="Flash"
+              >
+                <Zap className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Camera viewfinder area */}
+            <div className="relative flex flex-1 flex-col items-center justify-center px-6">
+              {/* Soft glow */}
+              <div className="absolute inset-0 bg-gradient-radial from-amber-400/20 via-transparent to-transparent blur-3xl" />
+
+              {/* Focus circle (decorative viewfinder) */}
+              <div className="relative flex h-64 w-64 items-center justify-center rounded-full border border-white/20 bg-white/5 backdrop-blur-sm">
+                <span className="absolute -left-1 -top-1 h-6 w-6 rounded-tl-2xl border-l-2 border-t-2 border-white/70" />
+                <span className="absolute -right-1 -top-1 h-6 w-6 rounded-tr-2xl border-r-2 border-t-2 border-white/70" />
+                <span className="absolute -bottom-1 -left-1 h-6 w-6 rounded-bl-2xl border-b-2 border-l-2 border-white/70" />
+                <span className="absolute -bottom-1 -right-1 h-6 w-6 rounded-br-2xl border-b-2 border-r-2 border-white/70" />
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/10 backdrop-blur">
+                  <Camera className="h-9 w-9" strokeWidth={1.8} />
+                </div>
               </div>
-              <div className="text-center">
-                <p className="text-sm font-medium text-foreground">Take a photo or upload</p>
-                <p className="text-xs text-muted-foreground mt-1">AI will detect the foods automatically</p>
+
+              <p className="relative mt-6 text-center text-sm text-white/70">
+                Tap the shutter to scan your meal
+              </p>
+
+              {/* Mode pills under the circle */}
+              <div className="relative mt-6 flex items-center gap-2 rounded-full bg-white/10 p-1 backdrop-blur-md">
+                <ModeButton
+                  active
+                  icon={<Camera className="h-4 w-4" />}
+                  label="Meal"
+                  onClick={() => {/* default */}}
+                />
+                <ModeButton
+                  icon={<Barcode className="h-4 w-4" />}
+                  label="Label"
+                  onClick={() => toast.info("Barcode scan — coming soon")}
+                />
+                <ModeButton
+                  icon={<Keyboard className="h-4 w-4" />}
+                  label="Type"
+                  onClick={() => toast.info("Manual search — coming soon")}
+                />
               </div>
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
-            </label>
+            </div>
+
+            {/* Bottom controls: Gallery · Shutter · placeholder */}
+            <div className="relative flex items-center justify-around px-8 pb-12 pt-2">
+              <label className="flex h-14 w-14 cursor-pointer items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md transition-colors active:bg-white/20">
+                <ImageIcon className="h-6 w-6" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </label>
+
+              {/* Shutter button — large white circle */}
+              <label className="relative cursor-pointer">
+                <span className="block h-20 w-20 rounded-full border-[5px] border-white/80 bg-transparent p-1.5 transition-transform active:scale-95">
+                  <span className="block h-full w-full rounded-full bg-white" />
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </label>
+
+              {/* Spacer to balance Gallery on the left */}
+              <span className="h-14 w-14" aria-hidden />
+            </div>
           </motion.div>
         )}
 
@@ -461,5 +539,30 @@ export default function AddMeal() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function ModeButton({
+  icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  active?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-semibold transition-colors ${
+        active ? "bg-white text-zinc-900" : "text-white/80 hover:text-white"
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }
